@@ -28,11 +28,6 @@ use Aws\S3\S3Client;
 
 require_once realpath(dirname(__FILE__)) . '/Chargeback.php';
 
-new S3Client([
-    'version' => 'latest',
-    'region' => 'us-east-1',
-    'suppress_php_deprecation_warning' => true
-]);
 class Utils
 {
     public static function getConfig($data = array())
