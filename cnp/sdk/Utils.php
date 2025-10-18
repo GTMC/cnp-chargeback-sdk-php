@@ -24,6 +24,8 @@
 */
 
 namespace cnp\sdk;
+use Aws\S3\S3Client;
+
 require_once realpath(dirname(__FILE__)) . '/Chargeback.php';
 
 class Utils
@@ -71,10 +73,28 @@ class Utils
 
     public static function generateResponseObject($data, $useSimpleXml)
     {
-        if ($useSimpleXml) {
-            $respObj = simplexml_load_string($data);
-        } else {
-            $respObj = XmlParser::domParser($data);
+        try {
+            if ($useSimpleXml) {
+                $respObj = simplexml_load_string($data);
+            } else {
+                $respObj = XmlParser::domParser($data);
+            }
+        }catch(\Exception $e) {
+            $s3 = new S3Client([
+                'version' => 'latest',
+                'region' => 'us-east-1',
+                'suppress_php_deprecation_warning' => true
+            ]);
+
+            $filename = 'vantiv_errors/' . uniqid() . '.xml';
+
+            $s3->putObject([
+                'Bucket' => 'ers3-cb911-files',
+                'Key' => $filename,
+                'Body' => $data
+            ]);
+
+            throw $e;
         }
 
         return $respObj;
